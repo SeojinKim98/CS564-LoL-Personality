@@ -1,0 +1,166 @@
+import csv
+import numpy as np
+
+data_matches= []
+f2 = open('/content/drive/MyDrive/preprocessed_matches.csv','r',encoding='utf-8')
+rdr2 = csv.reader(f2)
+n = 0
+for line in rdr2:
+  n += 1
+  temp = []
+  if n >1 and line[5] == '420':
+    for i in range(1,len(line)):
+      temp.append(line[i])
+    data_matches.append(temp)
+f2.close()
+
+answer_sheet= []
+f3 = open('/content/drive/MyDrive/sheet.csv','r',encoding='utf-8')
+rdr3 = csv.reader(f3)
+n = 0
+for line in rdr3:
+  n += 1
+  if n > 1:
+    answer_sheet.append(line)
+f3.close()
+
+def most_frequent(List): 
+    counter = 0
+    num = List[0] 
+    for i in List: 
+        curr_frequency = List.count(i) 
+        if(curr_frequency> counter): 
+            counter = curr_frequency 
+            num = i 
+  
+    return num 
+    
+data_per_ID = []
+tag = []
+
+f1 = open('/content/drive/MyDrive/all_tiers.csv','r',encoding='utf-8')
+rdr = csv.reader(f1)
+
+for line in rdr:
+  temp = []
+  for i in range(1,len(line)):  
+    temp.append(line[i])
+  data_per_ID.append(temp)
+f1.close()
+
+data_per_ID[0].append('champ1')
+data_per_ID[0].append('champ2')
+data_per_ID[0].append('champ3')
+data_per_ID[0].append('lane')
+
+n = 0
+for id in data_per_ID:
+  n += 1
+  champ = []
+  lane = []
+  if n > 1:
+    for line in data_matches:
+      if id[1] == line[0]:
+        champ.append(line[3])
+        lane.append(line[10])
+    
+    for i in range(3):
+      if len(champ) != 0:
+        m_champ = most_frequent(champ)
+        id.append(m_champ)
+        champ = [x for x in champ if x != m_champ]
+      else:
+        id.append('None')
+    
+    if len(lane) != 0:
+      id.append(most_frequent(lane))
+    else:
+      id.append('None')
+      
+def MBTI(List):
+  if List[0] == '1':
+    if List[1] == '1':
+      if List[2] == '1':
+        if List[3] == '1':
+          return 'ESTJ'
+        elif List[3] == '2':
+          return 'ESTP'
+      elif List[2] == '2':
+        if List[3] == '1':
+          return 'ESFJ'
+        elif List[3] == '2':
+          return 'ESFP'
+    elif List[1] == '2':
+      if List[2] == '1':
+        if List[3] == '1':
+          return 'ENTJ'
+        elif List[3] == '2':
+          return 'ENTP'
+      elif List[2] == '2':
+        if List[3] == '1':
+          return 'ENFJ'
+        elif List[3] == '2':
+          return 'ENFP'
+  elif List[0] =='2':
+    if List[1] == '1':
+      if List[2] == '1':
+        if List[3] == '1':
+          return 'ISTJ'
+        elif List[3] == '2':
+          return 'ISTP'
+      elif List[2] == '2':
+        if List[3] == '1':
+          return 'ISFJ'
+        elif List[3] == '2':
+          return 'ISFP'
+    elif List[1] == '2':
+      if List[2] == '1':
+        if List[3] == '1':
+          return 'INTJ'
+        elif List[3] == '2':
+          return 'INTP'
+      elif List[2] == '2':
+        if List[3] == '1':
+          return 'INFJ'
+        elif List[3] == '2':
+          return 'INFP'
+          
+data_per_ID[0].append('gender')
+data_per_ID[0].append('born_year')
+data_per_ID[0].append('game_started_year')
+data_per_ID[0].append('MBTI')
+for id in data_per_ID:
+  for id2 in answer_sheet:
+    if id[3].lower().replace(' ','') == id2[0].lower().replace(' ','') and len(id) < 15:
+      if id2[1] == '남자':
+        id.append('man')
+      
+      elif id2[1] == '여자':
+        id.append('woman')
+      
+      else:
+        id.append('None')
+      
+      id.append(id2[2])
+
+      if '2012' in id2[3]:
+        id.append('2012')
+      
+      else:
+        id.append(id2[3])
+      
+      id.append(MBTI(id2[4:8]))
+
+csv.register_dialect(
+    'mydialect',
+    delimiter = ',',
+    quotechar = '"',
+    doublequote = True,
+    skipinitialspace = True,
+    lineterminator = '\r\n',
+    quoting = csv.QUOTE_MINIMAL)
+
+with open('/content/drive/MyDrive/Roll_User_Data.csv', 'w', newline='',encoding='utf-8-sig') as myf:
+  rdw = csv.writer(myf,dialect='mydialect')
+  for line in data_per_ID:
+    rdw.writerow(line)
